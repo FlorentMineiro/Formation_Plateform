@@ -6,6 +6,8 @@ use App\Repository\ModuleRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: ModuleRepository::class)]
 class Module
@@ -81,6 +83,22 @@ class Module
     public function setDureeEstimee(int $dureeEstimee): static
     {
         $this->dureeEstimee = $dureeEstimee;
+
+        return $this;
+    }
+
+    #[ORM\ManyToOne(inversedBy: 'modules')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Formation $formation = null;
+
+    public function getFormation(): ?Formation
+    {
+        return $this->formation;
+    }
+
+    public function setFormation(?Formation $formation): static
+    {
+        $this->formation = $formation;
 
         return $this;
     }

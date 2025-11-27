@@ -6,6 +6,8 @@ use App\Repository\FormationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 
 #[ORM\Entity(repositoryClass: FormationRepository::class)]
@@ -22,8 +24,8 @@ class Formation
     #[Assert\Length(
         min: 10,
         max: 200,
-        minMessage: "Le titre doit contenir au moins {{ limit }} caractères.",
-        maxMessage: "Le titre ne peut pas dépasser {{ limit }} caractères."
+        minMessage: "Le titre doit contenir au moins {{ limit }} caracteres.",
+        maxMessage: "Le titre ne peut pas dépasser {{ limit }} caracteres."
     )]
     private ?string $titre = null;
 
@@ -40,8 +42,8 @@ class Formation
 
     #[ORM\Column(length: 20)]
     #[Assert\Choice(
-        choices:['Débutant','Intermédiaire','Avancé'],
-        message:'Le niveau doit être "Débutant","Intermédiaire","Avancé" '
+        choices:['Debutant','Intermediaire','Avance'],
+        message:'Le niveau doit être "Debutant","Intermediaire","Avance" '
     )]
     private ?string $niveauDifficulte = null;
 
@@ -165,6 +167,44 @@ class Formation
     public function setCapaciteMax(int $capaciteMax): static
     {
         $this->capaciteMax = $capaciteMax;
+
+        return $this;
+    }
+
+    #[ORM\OneToMany(mappedBy: 'formation', targetEntity: Module::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $modules;
+
+    public function __construct()
+    {
+        $this->modules = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, Module>
+     */
+    public function getModules(): Collection
+    {
+        return $this->modules;
+    }
+
+    public function addModule(Module $module): static
+    {
+        if (!$this->modules->contains($module)) {
+            $this->modules->add($module);
+            $module->setFormation($this);
+        }
+
+        return $this;
+    }
+
+    public function removeModule(Module $module): static
+    {
+        if ($this->modules->removeElement($module)) {
+            // set the owning side to null (unless already changed)
+            if ($module->getFormation() === $this) {
+                $module->setFormation(null);
+            }
+        }
 
         return $this;
     }
