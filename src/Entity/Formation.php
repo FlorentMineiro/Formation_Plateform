@@ -172,20 +172,28 @@ class Formation
     }
 
     #[ORM\OneToMany(mappedBy: 'formation', targetEntity: Module::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\ManyToMany(targetEntity: Utilisateur::class, inversedBy: 'formationsEnseignees')]
+    #[ORM\JoinTable(name: 'formation_instructeur')]
+    private Collection $instructeurs;
+   
     private Collection $modules;
+    
 
     public function __construct()
     {
         $this->modules = new ArrayCollection();
+        $this->utilisateur = new ArrayCollection();
     }
 
     /**
      * @return Collection<int, Module>
+     * @return Collection<int, Utilisateur>
      */
     public function getModules(): Collection
     {
         return $this->modules;
     }
+    
 
     public function addModule(Module $module): static
     {
@@ -206,6 +214,23 @@ class Formation
             }
         }
 
+        return $this;
+    }
+    public function getInstructeur():Collection
+    {
+        return $this->instructeurs;
+    }
+    public function addInstructeur(Utilisateur $instructeur): static
+    {
+        if (!$this->instructeurs->contains($instructeur)) {
+            $this->instructeurs->add($instructeur);
+        }
+        return $this;
+    }
+
+    public function removeInstructeur(Utilisateur $instructeur): static
+    {
+        $this->instructeurs->removeElement($instructeur);
         return $this;
     }
 }

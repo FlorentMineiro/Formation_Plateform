@@ -8,6 +8,9 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+
 #[ORM\Entity(repositoryClass: UtilisateurRepository::class)]
 #[ORM\Table(name: 'utilisateur')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -38,7 +41,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     private array $roles = [];
 
     /** @var string The hashed password */
-    #[ORM\Column(type: 'string')]
+    #[ORM\Column(type: 'string')] 
     private ?string $motDePasse = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
@@ -51,6 +54,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->dateInscription = new \DateTimeImmutable();
         $this->estActif = true;
+        $this->formationsEnseignees = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -124,10 +128,41 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         $this->estActif = $estActif;
         return $this;
     }
+    
+
 
     #[\Deprecated]
     public function eraseCredentials(): void
     {
         // @deprecated, to be removed when upgrading to Symfony 8
     }
+    #[ORM\ManyToMany(targetEntity: Formation::class, mappedBy: 'instructeurs')]
+    private Collection $formationsEnseignees;
+
+
+    /**
+     * @return Collection<int,Formation> 
+     */ 
+    
+    
+    public function getFormationsEnseignees():Collection
+    {
+        return $this->formationsEnseignees;
+    }
+
+    public function addFormationsEnseignees(Formation $formationsEnseignee):static
+    {
+        if(!$this->formationsEnseignees->contains($formationsEnseignee))
+        {
+           $this->formationsEnseignees->add($formationsEnseignee);
+        }
+        return $this;
+    }
+
+    public function removeFormationsEnseignees(Formation $formationsEnseignee):static
+    {
+        $this->formationsEnseignees->removeElement($formationsEnseignee);
+        return  $this;
+    }
+    
 }
