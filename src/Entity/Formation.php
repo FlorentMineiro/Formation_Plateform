@@ -177,12 +177,19 @@ class Formation
     private Collection $instructeurs;
    
     private Collection $modules;
+
+    /**
+     * @var Collection<int, Inscription>
+     */
+    #[ORM\OneToMany(targetEntity: Inscription::class, mappedBy: 'formation', orphanRemoval: true)]
+    private Collection $formation;
     
 
     public function __construct()
     {
         $this->modules = new ArrayCollection();
         $this->utilisateur = new ArrayCollection();
+        $this->formation = new ArrayCollection();
     }
 
     /**
@@ -231,6 +238,36 @@ class Formation
     public function removeInstructeur(Utilisateur $instructeur): static
     {
         $this->instructeurs->removeElement($instructeur);
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Inscription>
+     */
+    public function getFormation(): Collection
+    {
+        return $this->formation;
+    }
+
+    public function addFormation(Inscription $formation): static
+    {
+        if (!$this->formation->contains($formation)) {
+            $this->formation->add($formation);
+            $formation->setFormation($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFormation(Inscription $formation): static
+    {
+        if ($this->formation->removeElement($formation)) {
+            // set the owning side to null (unless already changed)
+            if ($formation->getFormation() === $this) {
+                $formation->setFormation(null);
+            }
+        }
+
         return $this;
     }
 }

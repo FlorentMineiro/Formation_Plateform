@@ -55,6 +55,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         $this->dateInscription = new \DateTimeImmutable();
         $this->estActif = true;
         $this->formationsEnseignees = new ArrayCollection();
+        $this->apprenant = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -139,6 +140,12 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToMany(targetEntity: Formation::class, mappedBy: 'instructeurs')]
     private Collection $formationsEnseignees;
 
+    /**
+     * @var Collection<int, Inscription>
+     */
+    #[ORM\OneToMany(targetEntity: Inscription::class, mappedBy: 'apprenant', orphanRemoval: true)]
+    private Collection $apprenant;
+
 
     /**
      * @return Collection<int,Formation> 
@@ -163,6 +170,36 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->formationsEnseignees->removeElement($formationsEnseignee);
         return  $this;
+    }
+
+    /**
+     * @return Collection<int, Inscription>
+     */
+    public function getApprenant(): Collection
+    {
+        return $this->apprenant;
+    }
+
+    public function addApprenant(Inscription $apprenant): static
+    {
+        if (!$this->apprenant->contains($apprenant)) {
+            $this->apprenant->add($apprenant);
+            $apprenant->setApprenant($this);
+        }
+
+        return $this;
+    }
+
+    public function removeApprenant(Inscription $apprenant): static
+    {
+        if ($this->apprenant->removeElement($apprenant)) {
+            // set the owning side to null (unless already changed)
+            if ($apprenant->getApprenant() === $this) {
+                $apprenant->setApprenant(null);
+            }
+        }
+
+        return $this;
     }
     
 }
